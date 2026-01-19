@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Figures Index</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            background-color: #f4f4f9;
+        }
+
+        /* Sidebar Styling */
+        #sidebar {
+            width: 300px;
+            background-color: #2c3e50;
+            color: white;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #ddd;
+        }
+
+        #sidebar h2 {
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            background-color: #1a252f;
+            font-size: 1.2rem;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: #ecf0f1;
+            padding: 15px 20px;
+            text-align: left;
+            cursor: pointer;
+            border-bottom: 1px solid #34495e;
+            transition: background 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .nav-btn:hover {
+            background-color: #34495e;
+        }
+
+        .nav-btn.active {
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Main Content Area Styling */
+        #main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #figure-info {
+            margin-bottom: 15px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        #fig-title {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+
+        #fig-caption {
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* The Window for your Interactive Graphs */
+        #viewer-container {
+            flex-grow: 1;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar">
+        <h2>Figure Index</h2>
+        <div id="buttons-container">
+            </div>
+    </div>
+
+    <div id="main-content">
+        <div id="figure-info">
+            <h3 id="fig-title">Select a Figure</h3>
+            <p id="fig-caption">Click on a figure in the sidebar to view the interactive results.</p>
+        </div>
+        <div id="viewer-container">
+            <iframe id="viewer" src="about:blank"></iframe>
+        </div>
+    </div>
+
+    <script>
+        // DATA CONFIGURATION
+        // PASTE YOUR FILE NAMES INSIDE THE QUOTES BELOW
+        const figures = [
+            {
+                id: 1,
+                file: "wordcloud.jpg", 
+                title: "Figure 1: Frequent N-Grams",
+                caption: "Comparison of the most frequent n-grams in the March 8th (8M) (left) and November 25th (25N) (right) datasets."
+            },
+            {
+                id: 2,
+                file: "Time_Series_8M.png", 
+                title: "Figure 2: Top 10 Unigrams (8M)",
+                caption: "Temporal evolution of the top 10 verified unigrams in the March 8th (8M) dataset from 2010 to 2022."
+            },
+            {
+                id: 3,
+                file: "Time_Series_25N.png", 
+                title: "Figure 3: Top 10 Unigrams (25N)",
+                caption: "Temporal evolution of the top 10 verified unigrams in the November 25th (25N) dataset from 2010 to 2022."
+            },
+            {
+                id: 4,
+                file: "INSERT_FILENAME_HERE.html", 
+                title: "Figure 4: Frequency of 'Feliz' (Happy)",
+                caption: "Evolution of the normalized frequency (per 10,000 tokens) of the lemmas in tweets published on March 8 (8M) and November 25 (25N)."
+            },
+            {
+                id: 5,
+                file: "evolution_graph.html", 
+                title: "Figure 5: Frequency of 'Libre' (Free)",
+                caption: "Evolution of the normalized frequency (per 10,000 tokens) of the lemmas in tweets published on March 8 (8M) and November 25 (25N)."
+            },
+            {
+                id: 6,
+                file: "evolution_graph.html", 
+                title: "Figure 6: #Feminismo Evolution",
+                caption: "Evolution of the normalized hashtags (per 1000 tweets) of #Feminismo in tweets published on March 8 (8M) and November 25 (25N) between 2010 and 2022."
+            },
+            {
+                id: 7,
+                file: "hashtags_top25_interactive.html", 
+                title: "Figure 7: #NiUnaMenos Evolution",
+                caption: "Evolution of the normalized hashtags (per 1000 tweets) in tweets published on March 8 (8M) and November 25 (25N) between 2010 and 2022."
+            },
+            {
+                id: 8,
+                file: "8M_normalized_bubbles.html" "25N_normalized_bubbles.html", 
+                title: "Figure 8: Prominent Topics Time-Series",
+                caption: "Time-series visualization of the most prominent topics within the #Feminismo discourse on March 8th (8M) and November 25th (25N). Bubble size indicates share of voice."
+            },
+            {
+                id: 9,
+                file: "topic_explorer_8M.html" "topic_explorer_25N.html", 
+                title: "Figure 9: Topic Explorer",
+                caption: "HTML topic explorer that presents sample tweets catalogued by BerTopic automatically."
+            },
+            {
+                id: 10,
+                file: "heatmap.png", 
+                title: "Figure 10: Discourse Similarity Matrix",
+                caption: "Temporal evolution of discourse similarity (2010–2022). Cosine similarity matrix comparing text content from March 8 (8M) and November 25 (25N)."
+            },
+            {
+                id: 11,
+                file: "8M_rolling_cohesion.png", 
+                title: "Figure 11: Rolling Cohesion (8M)",
+                caption: "Rolling Cohesion Analysis for the March 8th (8M) Dataset (± 2 Years). Contrasts Local Similarity against Global Similarity."
+            },
+            {
+                id: 12,
+                file: "25N_rolling_cohesion.png", 
+                title: "Figure 12: Rolling Cohesion (25N)",
+                caption: "Rolling Cohesion Analysis for the November 25th (25N) Dataset (± 2 Years). Contrasts Local Similarity against Global Similarity."
+            },
+            {
+                id: 13,
+                file: "internal cosine similarity.png", 
+                title: "Figure 13: Weighted Topic Similarity",
+                caption: "Temporal evolution of Weighted Average Topic Similarity (2010–2022). Compares internal semantic cohesion of 25N (blue) and 8M (orange)."
+            },
+            {
+                id: 14,
+                file: "trend_analysis_positive.png", 
+                title: "Figure 14: Positive Sentiment Trend",
+                caption: "Trend of Positive Sentiment Over Years (2010–2022). Solid lines represent linear regression trends."
+            },
+            {
+                id: 15,
+                file: "trend_analysis_net_sentiment.png", 
+                title: "Figure 15: Net Sentiment Trend",
+                caption: "Trend of Net Sentiment Over Years (2010–2022). Net sentiment is calculated as the difference between positive and negative sentiment scores."
+            },
+            {
+                id: 16,
+                file: "hashtags_top25_interactive.html", 
+                title: "Figure 16: #NosotrasParamos Evolution",
+                caption: "Evolution of the normalized hashtags (per 1000 tweets) of #NosotrasParamos in tweets published on March 8 (8M) and November 25 (25N)."
+            }
+{
+   
+        ];
+
+        // LOGIC TO BUILD MENU
+        const container = document.getElementById('buttons-container');
+        const viewer = document.getElementById('viewer');
+        const titleLabel = document.getElementById('fig-title');
+        const captionLabel = document.getElementById('fig-caption');
+
+        figures.forEach((fig, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'nav-btn';
+            btn.innerText = fig.title;
+            btn.onclick = () => loadFigure(index, btn);
+            container.appendChild(btn);
+            
+            // Auto-load the first figure
+            if (index === 0) {
+                btn.click();
+            }
+        });
+
+        function loadFigure(index, btnElement) {
+            const data = figures[index];
+            
+            // Update Iframe
+            viewer.src = data.file;
+            
+            // Update Text
+            titleLabel.innerText = data.title;
+            captionLabel.innerText = data.caption;
+
+            // Update Active Button Style
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+        }
+    </script>
+
+</body>
+</html>
