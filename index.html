@@ -227,7 +227,7 @@
             },
             {
                 id: 13,
-                file: "internal%20cosine%20similarity.png", 
+                file: "internalsimilarity.png", 
                 title: "Figure 13: Weighted Topic Similarity",
                 caption: "Temporal evolution of Weighted Average Topic Similarity (2010–2022). Compares internal semantic cohesion of 25N (blue) and 8M (orange)."
             },
@@ -258,16 +258,14 @@
         const captionLabel = document.getElementById('fig-caption');
         const tabsContainer = document.getElementById('variant-tabs');
 
-        // NEW SMART LOADER FUNCTION
-        // This checks if the file is an Image or HTML and adjusts the viewer accordingly
+        // SMART RESIZER FUNCTION
+        // This makes sure images fit the screen, but HTML files load normally
         function setViewerContent(url) {
-            // Check if file extension is an image
             const isImage = url.match(/\.(jpeg|jpg|gif|png)$/i) != null;
 
             if (isImage) {
-                // IT IS AN IMAGE:
-                // Inject a mini-HTML page that forces the image to "contain" (fit) within the window
-                viewer.removeAttribute('src'); // Clear standard source
+                // If it's an image, we wrap it in a mini-page to force it to "fit"
+                viewer.removeAttribute('src'); 
                 viewer.srcdoc = `
                     <html>
                         <body style="margin:0; padding:0; height:100vh; display:flex; justify-content:center; align-items:center; background-color: #ffffff;">
@@ -276,14 +274,13 @@
                     </html>
                 `;
             } else {
-                // IT IS AN HTML FILE:
-                // Load it normally
+                // If it's HTML, load it normally
                 viewer.removeAttribute('srcdoc');
                 viewer.src = url;
             }
         }
 
-        // INIT MENU
+        // BUILD MENU
         figures.forEach((fig, index) => {
             const btn = document.createElement('button');
             btn.className = 'nav-btn';
@@ -298,7 +295,7 @@
         function loadFigure(index, btnElement) {
             const data = figures[index];
             
-            // Update Labels
+            // Update Text
             titleLabel.innerText = data.title;
             captionLabel.innerText = data.caption;
             
@@ -307,7 +304,7 @@
             tabsContainer.style.display = 'none';
 
             if (data.variants) {
-                // Handle Tabs (Figures 8 & 9)
+                // Handle Multi-file Figures (Tabs)
                 tabsContainer.style.display = 'flex';
                 data.variants.forEach((variant, vIndex) => {
                     const tabBtn = document.createElement('button');
@@ -326,11 +323,10 @@
                 setViewerContent(data.file);
             }
 
-            // Update Sidebar Style
+            // Update Active Sidebar Button
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             btnElement.classList.add('active');
         }
     </script>
 </body>
 </html>
-
