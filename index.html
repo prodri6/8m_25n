@@ -22,6 +22,7 @@
             display: flex;
             flex-direction: column;
             border-right: 1px solid #ddd;
+            flex-shrink: 0;
         }
 
         #sidebar h2 {
@@ -61,6 +62,7 @@
             flex-direction: column;
             padding: 20px;
             box-sizing: border-box;
+            height: 100vh;
         }
 
         #figure-info {
@@ -82,6 +84,28 @@
             line-height: 1.5;
         }
 
+        /* Tab Buttons for Multi-File Figures */
+        #variant-tabs {
+            margin-top: 10px;
+            display: none; /* Hidden by default */
+            gap: 10px;
+        }
+
+        .variant-btn {
+            background-color: #ecf0f1;
+            border: 1px solid #bdc3c7;
+            padding: 5px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .variant-btn.active-variant {
+            background-color: #2c3e50;
+            color: white;
+            border-color: #2c3e50;
+        }
+
         /* The Window for your Interactive Graphs */
         #viewer-container {
             flex-grow: 1;
@@ -90,12 +114,14 @@
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            position: relative;
         }
 
         iframe {
             width: 100%;
             height: 100%;
             border: none;
+            display: block;
         }
     </style>
 </head>
@@ -111,7 +137,10 @@
         <div id="figure-info">
             <h3 id="fig-title">Select a Figure</h3>
             <p id="fig-caption">Click on a figure in the sidebar to view the interactive results.</p>
+            
+            <div id="variant-tabs"></div>
         </div>
+        
         <div id="viewer-container">
             <iframe id="viewer" src="about:blank"></iframe>
         </div>
@@ -119,7 +148,6 @@
 
     <script>
         // DATA CONFIGURATION
-        // PASTE YOUR FILE NAMES INSIDE THE QUOTES BELOW
         const figures = [
             {
                 id: 1,
@@ -141,6 +169,7 @@
             },
             {
                 id: 4,
+                // Placeholder kept as requested
                 file: "INSERT_FILENAME_HERE.html", 
                 title: "Figure 4: Frequency of 'Feliz' (Happy)",
                 caption: "Evolution of the normalized frequency (per 10,000 tokens) of the lemmas in tweets published on March 8 (8M) and November 25 (25N)."
@@ -165,13 +194,21 @@
             },
             {
                 id: 8,
-                file: "8M_normalized_bubbles.html" "25N_normalized_bubbles.html", 
+                // FIXED: Used variants for the two files
+                variants: [
+                    { name: "8M Dataset", url: "8M_normalized_bubbles.html" },
+                    { name: "25N Dataset", url: "25N_normalized_bubbles.html" }
+                ],
                 title: "Figure 8: Prominent Topics Time-Series",
                 caption: "Time-series visualization of the most prominent topics within the #Feminismo discourse on March 8th (8M) and November 25th (25N). Bubble size indicates share of voice."
             },
             {
                 id: 9,
-                file: "topic_explorer_8M.html" "topic_explorer_25N.html", 
+                // FIXED: Used variants for the two files
+                variants: [
+                    { name: "8M Explorer", url: "topic_explorer_8M.html" },
+                    { name: "25N Explorer", url: "topic_explorer_25N.html" }
+                ],
                 title: "Figure 9: Topic Explorer",
                 caption: "HTML topic explorer that presents sample tweets catalogued by BerTopic automatically."
             },
@@ -217,15 +254,14 @@
                 title: "Figure 16: #NosotrasParamos Evolution",
                 caption: "Evolution of the normalized hashtags (per 1000 tweets) of #NosotrasParamos in tweets published on March 8 (8M) and November 25 (25N)."
             }
-{
-   
         ];
 
-        // LOGIC TO BUILD MENU
+        // LOGIC TO BUILD MENU AND HANDLE CLICKS
         const container = document.getElementById('buttons-container');
         const viewer = document.getElementById('viewer');
         const titleLabel = document.getElementById('fig-title');
         const captionLabel = document.getElementById('fig-caption');
+        const tabsContainer = document.getElementById('variant-tabs');
 
         figures.forEach((fig, index) => {
             const btn = document.createElement('button');
@@ -243,14 +279,43 @@
         function loadFigure(index, btnElement) {
             const data = figures[index];
             
-            // Update Iframe
-            viewer.src = data.file;
-            
-            // Update Text
+            // 1. Update Text Info
             titleLabel.innerText = data.title;
             captionLabel.innerText = data.caption;
+            
+            // 2. Clear previous tabs
+            tabsContainer.innerHTML = ''; 
+            tabsContainer.style.display = 'none';
 
-            // Update Active Button Style
+            // 3. Check if we have multiple variants (Tabs) or a single file
+            if (data.variants) {
+                // Show tabs container
+                tabsContainer.style.display = 'flex';
+                
+                // Create a button for each variant
+                data.variants.forEach((variant, vIndex) => {
+                    const tabBtn = document.createElement('button');
+                    tabBtn.className = 'variant-btn';
+                    tabBtn.innerText = variant.name;
+                    tabBtn.onclick = () => {
+                        // Switch iframe src
+                        viewer.src = variant.url;
+                        // Update active styling
+                        document.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active-variant'));
+                        tabBtn.classList.add('active-variant');
+                    };
+                    tabsContainer.appendChild(tabBtn);
+
+                    // Auto-click the first variant
+                    if (vIndex === 0) tabBtn.click();
+                });
+
+            } else {
+                // Single File Mode
+                viewer.src = data.file;
+            }
+
+            // 4. Update Sidebar Active Button Style
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             btnElement.classList.add('active');
         }
