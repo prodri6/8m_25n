@@ -129,15 +129,13 @@
 
     <div id="sidebar">
         <h2>Figure Index</h2>
-        <div id="buttons-container">
-            </div>
+        <div id="buttons-container"></div>
     </div>
 
     <div id="main-content">
         <div id="figure-info">
             <h3 id="fig-title">Select a Figure</h3>
             <p id="fig-caption">Click on a figure in the sidebar to view the interactive results.</p>
-            
             <div id="variant-tabs"></div>
         </div>
         
@@ -169,7 +167,6 @@
             },
             {
                 id: 4,
-                // Placeholder kept as requested
                 file: "INSERT_FILENAME_HERE.html", 
                 title: "Figure 4: Frequency of 'Feliz' (Happy)",
                 caption: "Evolution of the normalized frequency (per 10,000 tokens) of the lemmas in tweets published on March 8 (8M) and November 25 (25N)."
@@ -194,7 +191,6 @@
             },
             {
                 id: 8,
-                // FIXED: Used variants for the two files
                 variants: [
                     { name: "8M Dataset", url: "8M_normalized_bubbles.html" },
                     { name: "25N Dataset", url: "25N_normalized_bubbles.html" }
@@ -204,7 +200,6 @@
             },
             {
                 id: 9,
-                // FIXED: Used variants for the two files
                 variants: [
                     { name: "8M Explorer", url: "topic_explorer_8M.html" },
                     { name: "25N Explorer", url: "topic_explorer_25N.html" }
@@ -232,7 +227,7 @@
             },
             {
                 id: 13,
-                file: "internal cosine similarity.png", 
+                file: "internal%20cosine%20similarity.png", 
                 title: "Figure 13: Weighted Topic Similarity",
                 caption: "Temporal evolution of Weighted Average Topic Similarity (2010–2022). Compares internal semantic cohesion of 25N (blue) and 8M (orange)."
             },
@@ -256,13 +251,39 @@
             }
         ];
 
-        // LOGIC TO BUILD MENU AND HANDLE CLICKS
+        // UI ELEMENTS
         const container = document.getElementById('buttons-container');
         const viewer = document.getElementById('viewer');
         const titleLabel = document.getElementById('fig-title');
         const captionLabel = document.getElementById('fig-caption');
         const tabsContainer = document.getElementById('variant-tabs');
 
+        // NEW SMART LOADER FUNCTION
+        // This checks if the file is an Image or HTML and adjusts the viewer accordingly
+        function setViewerContent(url) {
+            // Check if file extension is an image
+            const isImage = url.match(/\.(jpeg|jpg|gif|png)$/i) != null;
+
+            if (isImage) {
+                // IT IS AN IMAGE:
+                // Inject a mini-HTML page that forces the image to "contain" (fit) within the window
+                viewer.removeAttribute('src'); // Clear standard source
+                viewer.srcdoc = `
+                    <html>
+                        <body style="margin:0; padding:0; height:100vh; display:flex; justify-content:center; align-items:center; background-color: #ffffff;">
+                            <img src="${url}" style="max-width:100%; max-height:100%; object-fit:contain;">
+                        </body>
+                    </html>
+                `;
+            } else {
+                // IT IS AN HTML FILE:
+                // Load it normally
+                viewer.removeAttribute('srcdoc');
+                viewer.src = url;
+            }
+        }
+
+        // INIT MENU
         figures.forEach((fig, index) => {
             const btn = document.createElement('button');
             btn.className = 'nav-btn';
@@ -270,56 +291,46 @@
             btn.onclick = () => loadFigure(index, btn);
             container.appendChild(btn);
             
-            // Auto-load the first figure
-            if (index === 0) {
-                btn.click();
-            }
+            // Auto-load first figure
+            if (index === 0) btn.click();
         });
 
         function loadFigure(index, btnElement) {
             const data = figures[index];
             
-            // 1. Update Text Info
+            // Update Labels
             titleLabel.innerText = data.title;
             captionLabel.innerText = data.caption;
             
-            // 2. Clear previous tabs
+            // Reset Tabs
             tabsContainer.innerHTML = ''; 
             tabsContainer.style.display = 'none';
 
-            // 3. Check if we have multiple variants (Tabs) or a single file
             if (data.variants) {
-                // Show tabs container
+                // Handle Tabs (Figures 8 & 9)
                 tabsContainer.style.display = 'flex';
-                
-                // Create a button for each variant
                 data.variants.forEach((variant, vIndex) => {
                     const tabBtn = document.createElement('button');
                     tabBtn.className = 'variant-btn';
                     tabBtn.innerText = variant.name;
                     tabBtn.onclick = () => {
-                        // Switch iframe src
-                        viewer.src = variant.url;
-                        // Update active styling
+                        setViewerContent(variant.url);
                         document.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active-variant'));
                         tabBtn.classList.add('active-variant');
                     };
                     tabsContainer.appendChild(tabBtn);
-
-                    // Auto-click the first variant
                     if (vIndex === 0) tabBtn.click();
                 });
-
             } else {
-                // Single File Mode
-                viewer.src = data.file;
+                // Handle Single File
+                setViewerContent(data.file);
             }
 
-            // 4. Update Sidebar Active Button Style
+            // Update Sidebar Style
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             btnElement.classList.add('active');
         }
     </script>
-
 </body>
 </html>
+
